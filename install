@@ -1,0 +1,7 @@
+#!/bin/bash
+
+SRC=./src/gitignore.py
+DST=/usr/local/bin/gitignore
+
+chmod 755 ${SRC}
+cp ${SRC} ${DST}
