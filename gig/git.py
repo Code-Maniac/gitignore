@@ -56,7 +56,7 @@ def pull(remote="origin", branch="master", gitDir=os.getcwd()):
     with open(os.devnull, 'w') as devnull:
         stdin = stdout = stderr = devnull
         return subprocess.call(
-            "git pull %s %s" % (remote, branch, gitDir),
+            "git pull %s %s" % (remote, branch),
             stdin=stdin,
             stdout=stdout,
             stderr=stderr,

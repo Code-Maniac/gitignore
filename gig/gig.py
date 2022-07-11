@@ -1,26 +1,29 @@
 import os
+import sys
 import git
-import argparse
+# import argparse
+# import argparse.ArgumentError
+from gigparser import GigParser
 
 # define some error
-class GitIgnoreError(Exception):
+class GigError(Exception):
     pass
 
-class GitIgnore:
+class Gig:
     # the default url for the schemas
     _shemaurl = "https://github.com/github/gitignore"  # ???
-    _configdir = os.path("~/.config/gitignore")
+    _configdir = "~/.config/gitignore"
     _configpath = _configdir + "/config"
     _schemadir = _configpath + "/schemas"
 
     # markers to show in .gitignore where portion of file managed by this
     # begins and ends
-    _begintag = "# <<<GIBEGIN>>>"
-    _endtag = "# <<<GIEND>>>"
+    _begintag = "# <<<GIGBEGIN>>>"
+    _endtag = "# <<<GIGEND>>>"
     # message that is shown after the begin message to inform the reader
     # that the content between the tags is managed by this program
     _infomessage = (
-        "# Content between <<<GIBEGIN>>> and <<<GIEND>>> managed by gitignore"
+        "# Content between <<<GIGBEGIN>>> and <<<GIGEND>>> managed by gig"
         "DO NOT MODIFY"
     )
 
@@ -35,21 +38,21 @@ class GitIgnore:
     # NOTE: from will not be utilised in the first version but I'm putting
     # it here in case I decide to later allow for additional configuration
     # regarding which git repository the schemas come from
-    _beginschematag = "# <<<GISCHEMABEGIN name=\"()\" from=\"\" commit=\"()\">>>"
-    _endschematag = "# <<<GISCHEMAEND>>>"
+    _beginschematag = "# <<<GIGSCHEMABEGIN name=\"()\" from=\"\" commit=\"()\">>>"
+    _endschematag = "# <<<GIGSCHEMAEND>>>"
 
     def __init__(self):
         # first check that git is installed
         if not git.isInstalled():
-            raise GitIgnoreError("E: Git must be installed to use gitignore")
+            raise GigError("E: Git must be installed to use gitignore")
         # first check that we are in an git repository before going any further
         elif not git.isRepo():
-            raise GitIgnoreError("E: Must be in a git repository to use gitignore")
+            raise GigError("E: Must be in a git repository to use gitignore")
 
         # check that the schemas exist
-        if not (self._schemasExist() or self._initSchemDir()):
-            raise GitIgnoreError("E: Gitignore schemas are not available")
-        elif not self._pullSchemas(self._schemadir): # should this be an error
+        if not (self._schemasExist() or self._initSchemaDir()):
+            raise GigError("E: Gitignore schemas are not available")
+        elif not self._pullSchemas(): # should this be an error
             print("W: Gitignore schemas could not be updated")
 
         # path information for the git repository
@@ -69,6 +72,9 @@ class GitIgnore:
 
         #  finaly create argument parser
         self._parser = self._getParser()
+
+        # parse the arguments
+        self._parser.parse_args(sys.argv[1:])
 
 
     def execute(self, args):
@@ -127,16 +133,16 @@ class GitIgnore:
         raise NotImplementedError
 
     # construct the argument parser for gitignore
-    def _getParser():
-        parser = argparse.ArgumentParser(
-            description="A tool for managing .gitignore",
+    def _getParser(self):
+        parser = GigParser(
+            description="Gig: A tool for managing .gitignore",
         )
 
         subparsers = parser.add_subparsers(
             title="subcommands",
             description="valid subcommands",
             dest="subcommand",
-            help="sub-command help")
+            help="additional help")
 
         # add subparser for the init subcommand
         parser_init = subparsers.add_parser(
@@ -178,14 +184,14 @@ class GitIgnore:
     # from the github directory
     def _initSchemaDir(self):
         try:
-            os.makedirs(self._schemapath)
+            os.makedirs(self._schemadir)
             return self._cloneSchemas()
-        except os.FileExistsError:
+        except FileExistsError:
             return False
 
     # check that the schemadir exists
     def _schemasExist(self):
-        return os.path.exists(self._schemapath)
+        return os.path.exists(self._schemadir)
 
     # clone the schemaurl to the schemadir
     def _cloneSchemas(self):

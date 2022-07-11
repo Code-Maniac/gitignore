@@ -3,20 +3,20 @@
 import sys
 
 from argparse import ArgumentError
-from gitignore import GitIgnore, GitIgnoreError
+from gig import Gig, GigError
 
 def main():
     try:
-        gi = GitIgnore()
+        gi = Gig()
         gi.execute(sys.argv)
-    except GitIgnoreError as err:
+    except GigError as err:
         print(err)
         sys.exit(1)
     except ArgumentError as err:
         print(err)
         sys.exit(2)
     except NotImplementedError:
-        print("Hit not implemented")
+        print("Not implemented")
         sys.exit(1)
 
 
