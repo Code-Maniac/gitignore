@@ -8,7 +8,7 @@ from gig import Gig, GigError
 def main():
     try:
         gi = Gig()
-        gi.execute(sys.argv)
+        gi.execute(sys.argv[1:])
     except GigError as err:
         print(err)
         sys.exit(1)
