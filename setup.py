@@ -13,7 +13,7 @@ setup(
     long_description=readme,
     author='Nick Jaycock',
     author_email='jaycock.n@gmail.com',
-    url='https://gitlab.com/CodeGremlin/gitignore.git',
+    url='https://github.com/code-manic/gitignore',
     license=license,
     packages=find_packages(exclude=('tests', 'docs'))
 )

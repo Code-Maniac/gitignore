@@ -40,7 +40,9 @@ class Gig:
         elif(parsedArgs.subcommand == "update"):
             self._doUpdate(parsedArgs)
         elif(parsedArgs.subcommand == "remove"):
-            self._doUpdate(parsedArgs)
+            self._doRemove(parsedArgs)
+        elif(parsedArgs.subcommand == "list"):
+            self._doList()
 
 
     def _setup(self):
@@ -58,7 +60,7 @@ class Gig:
         # set the initial gitignore content based on whether the gitignore
         # exidsts or not
         if self._gitignoreExists:
-            self._gitignoreContent = Gitignore(self._gitignorePath)
+            self._gitignoreContent = Gitignore.fromGitignoreFile(self._gitignorePath)
 
 
     def _doInit(self, args):
@@ -78,7 +80,16 @@ class Gig:
                 overwrite = True
 
         if(overwrite or not self._gitignoreExists):
-            # check args fo
+            # check args for any gitignore schemas to initialise with
+            print(args.schemas)
+            if len(args.schemas) > 0:
+                # generate the fresh gitignore from the given schema files
+                gi = Gitignore.fromSchemaFiles(args.schemas)
+                gi.write()
+            else:
+                # initialise an empty .gitignore
+                with open(self._gitignorePath, 'w'):
+                    pass
 
             raise NotImplementedError
         else:
@@ -99,6 +110,12 @@ class Gig:
     def _doRemove(self, args):
         self._setup()
         raise NotImplementedError
+
+    def _doList(self):
+        onlyfiles = [f for f in os.listdir(self._schemadir) if os.isfile(str.join(self._schemasdir, f))]
+        print(onlyfiles)
+        for file in onlyfiles:
+            print(file)
 
     # construct the argument parser for gitignore
     def _getParser(self):
@@ -124,32 +141,31 @@ class Gig:
             metavar="schemas",
             nargs="*",
             help="A schema or set of schemas to initialise the .gitignore with")
-        # parser_init.set_defaults(func=self._doInit)
 
         # add subparser for the add subcommand
         parser_add = subparsers.add_parser(
             "add",
             help="Add the .gitignore scehma to the .gitignore file")
         parser_add.add_argument("schemas", choices="XYZ", help="schemas help")
-        # parser_add.set_defaults(func=self._doAdd)
 
         # add subparser for the add-untracked command
         parser_add_untracked = subparsers.add_parser(
             "add-untracked",
             help="Add any currently untracked files in the git repository to .gitignore")
-        # parser_add_untracked.set_defaults(func=self._doAddUntracked)
 
         # add subparser for the update command
         parser_update = subparsers.add_parser(
             "update",
             help="Update any .gitignore schemas in the .gitignore file to their latest versions")
-        # parser_update.set_defaults(func=self._doUpdate)
 
         # add subparser for the remove command
         parser_remove = subparsers.add_parser(
             "remove",
             help="Remove the .gitignore schema from the .gitignore file")
-        # parser_remove.set_defaults(func=self._doRemove)
+
+        parser_list = subparsers.add_parser(
+            "list",
+            help="List available schemas")
 
         return parser
 
