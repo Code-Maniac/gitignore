@@ -9,6 +9,7 @@ def main():
     try:
         gi = Gig()
         gi.execute(sys.argv[1:])
+        sys.exit(0)
     except GigError as err:
         print(err)
         sys.exit(1)
