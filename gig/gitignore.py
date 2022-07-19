@@ -54,7 +54,7 @@ class Gitignore():
 
     def __init__(self, data):
         self._data = data
-        print(self._data)
+        # print(self._data)
         self._process()
 
     # initialise from a gitignore file
@@ -182,7 +182,7 @@ class Gitignore():
             raise Exception("No closing tag found for {}")
         else:
             # closing tag was not found
-            print("%u entries found\n" % len(schemaEntries))
+            # print("%u entries found\n" % len(schemaEntries))
             for entry in schemaEntries:
                 print(entry)
 

@@ -1,5 +1,6 @@
 import os
 import git
+import pathlib
 
 from gigparser import GigParser
 from gitignore import Gitignore
@@ -62,7 +63,7 @@ class Gig:
         if self._gitignoreExists:
             self._gitignoreContent = Gitignore.fromGitignoreFile(self._gitignorePath)
 
-
+    # handle "init" subcommand
     def _doInit(self, args):
         self._setup()
 
@@ -81,7 +82,6 @@ class Gig:
 
         if(overwrite or not self._gitignoreExists):
             # check args for any gitignore schemas to initialise with
-            print(args.schemas)
             if len(args.schemas) > 0:
                 # generate the fresh gitignore from the given schema files
                 gi = Gitignore.fromSchemaFiles(args.schemas)
@@ -95,27 +95,44 @@ class Gig:
         else:
             return
 
+    # handle add subcommand
     def _doAdd(self, args):
         self._setup()
         raise NotImplementedError
 
+    # handle add-untracked subcommand
     def _doAddUntracked(self, args):
         self._setup()
         raise NotImplementedError
 
+    # handle update subcommand
     def _doUpdate(self, args):
         self._setup()
         raise NotImplementedError
 
+    # handle remove subcommand
     def _doRemove(self, args):
         self._setup()
         raise NotImplementedError
 
+    # handle list subcommand
     def _doList(self):
-        onlyfiles = [f for f in os.listdir(self._schemadir) if os.isfile(str.join(self._schemasdir, f))]
-        print(onlyfiles)
-        for file in onlyfiles:
-            print(file)
+        self._setup()
+
+        print("==================")
+        print("Available schemas:")
+        print("==================")
+
+        files = []
+        for (dirpath, dirnames, filenames) in os.walk(self._schemadir):
+            print(filenames)
+            files.extend(filenames)
+
+        files.sort()
+        for f in files:
+            path = pathlib.Path(f)
+            if(path.suffix == ".gitignore"):
+                print(path.stem)
 
     # construct the argument parser for gitignore
     def _getParser(self):
