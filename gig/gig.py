@@ -60,8 +60,8 @@ class Gig:
 
         # set the initial gitignore content based on whether the gitignore
         # exidsts or not
-        if self._gitignoreExists:
-            self._gitignoreContent = Gitignore.fromGitignoreFile(self._gitignorePath)
+        # if self._gitignoreExists:
+        #     self._gitignoreContent = Gitignore.fromGitignoreFile(self._gitignorePath)
 
     # handle "init" subcommand
     def _doInit(self, args):
@@ -84,14 +84,10 @@ class Gig:
             # check args for any gitignore schemas to initialise with
             if len(args.schemas) > 0:
                 # generate the fresh gitignore from the given schema files
-                gi = Gitignore.fromSchemaFiles(args.schemas)
-                gi.write()
+                Gitignore.fromSchemaFiles(self._getSchemaFilesFromNames(args.schemas)).write(self._gitignorePath)
             else:
                 # initialise an empty .gitignore
-                with open(self._gitignorePath, 'w'):
-                    pass
-
-            raise NotImplementedError
+                Gitignore.createEmpty().write(self._gitignorePath)
         else:
             return
 
@@ -125,7 +121,6 @@ class Gig:
 
         files = []
         for (dirpath, dirnames, filenames) in os.walk(self._schemadir):
-            print(filenames)
             files.extend(filenames)
 
         files.sort()
@@ -206,3 +201,9 @@ class Gig:
     # pull updates for the git reposotory in the schema dir
     def _pullSchemas(self):
         return git.pull(branch="main", gitDir=self._schemadir)
+
+    def _getSchemaFilesFromNames(self, names):
+        output = []
+        for n in names:
+            output.append(self._schemadir + "/" + n + ".gitignore")
+        return output

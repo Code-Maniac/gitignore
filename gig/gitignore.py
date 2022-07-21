@@ -35,12 +35,10 @@ def _getSchemaDataFromFile(file):
 
     data = []
 
-    data.extend(beginTag)
-    data.append("\n")
+    data.append(beginTag)
     with open(file, 'r') as f:
-        data.extend(f.read())
-    data.extend(_endschematag)
-    data.append("\n")
+        data.append(f.read())
+    data.append(_endschematag)
 
     return data
 
@@ -54,7 +52,6 @@ class Gitignore():
 
     def __init__(self, data):
         self._data = data
-        # print(self._data)
         self._process()
 
     # initialise from a gitignore file
@@ -71,10 +68,8 @@ class Gitignore():
         # this will create a fresh gitignore file with only gig data inside
 
         data = []
-        data.extend(_begintag)
-        data.append("\n")
-        data.extend(_infomessage)
-        data.append("\n\n")
+        data.append(_begintag)
+        data.append(_infomessage)
 
         for file in schemaFiles:
             if os.path.exists(file):
@@ -82,20 +77,27 @@ class Gitignore():
             else:
                 print("W: %s does not exist" % file)
 
-        data.append("\n")
-        data.extend(_endtag)
-        data.append("\n")
+        data.append(_endtag)
 
-        return cls(''.join(str(x) for x in data))
+        return cls('\n'.join(str(x) for x in data))
 
+    # create a fresh gitignore file with gig tags
+    @classmethod
+    def createEmpty(cls):
+        data = []
+        data.append(_begintag)
+        data.append(_infomessage)
+        data.append(_endtag)
+
+        return cls('\n'.join(str(x) for x in data))
 
     # write the data to the given file
     def write(self, file):
         # write the data back to the file
-        # with open(file, 'w') as f:
-            # write _preGigLines followed by _gigLines followed by _posGigLines
-        return
-
+        with open(file, 'w') as f:
+            f.writelines('\n'.join(self._preGigLines))
+            f.writelines('\n'.join(self._gigLines))
+            f.writelines('\n'.join(self._postGigLines))
 
     def _process(self):
         # read the data into the structure
@@ -109,15 +111,15 @@ class Gitignore():
             self._processGigData()
             # sort the data into non gig managed and 
         else:
-            raise Exception("No gig tags")
+            raise Exception("No gig tags found")
 
 
     def _findGigTags(self, lines):
         found = False
 
         startFound = False
-        start = 0
-        end = 0
+        start = -1
+        end = -1
 
         for index, line in enumerate(lines):
             if not startFound and re.match(_begintag, line):
@@ -126,7 +128,7 @@ class Gitignore():
             elif re.match(_endtag, line):
                 end = index
 
-        if start != 0 and end > start:
+        if start >= 0 and end > start:
             found = True
 
         return (found, start, end)
